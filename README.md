@@ -753,18 +753,7 @@ screenshots/
 ├── 02-student-added.png
 ├── 03-student-update.png
 └── 04-student-delete.png
-
-## Screenshot Folder Structure
-
-```text
-screenshots/
-│
-├── 01-add-student-form.png
-├── 02-student-added.png
-├── 03-student-update.png
-└── 04-student-delete.png
 ```
-
 ---
 
 ## What I Learned
