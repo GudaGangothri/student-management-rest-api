@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+```
+<title>Student Management System</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f6f8;
+        margin: 0;
+        padding: 40px;
+    }
+
+    .container {
+        width: 800px;
+        margin: auto;
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+    }
+
+    h1 {
+        text-align: center;
+    }
+
+    input {
+        width: 95%;
+        padding: 10px;
+        margin: 8px 0;
+    }
+
+    button {
+        padding: 10px 20px;
+        margin: 10px 5px 20px 0;
+        cursor: pointer;
+    }
+
+    .edit-btn {
+        background-color: #ffc107;
+        border: none;
+    }
+
+    .delete-btn {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+    }
+
+    .update-btn {
+        background-color: #28a745;
+        color: white;
+        border: none;
+    }
+
+    .cancel-btn {
+        background-color: #6c757d;
+        color: white;
+        border: none;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    th,
+    td {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: center;
+    }
+
+    th {
+        background-color: #eeeeee;
+    }
+
+    #message {
+        font-weight: bold;
+        margin: 10px 0;
+    }
+</style>
+```
+
+</head>
+
+<body>
+
+```
+<div class="container">
+
+    <h1>Student Management System</h1>
+
+    <h2 id="formTitle">Add Student</h2>
+
+    <form id="studentForm">
+
+        <input
+            type="text"
+            id="name"
+            placeholder="Enter Name"
+            required
+        >
+
+        <input
+            type="email"
+            id="email"
+            placeholder="Enter Email"
+            required
+        >
+
+        <input
+            type="number"
+            id="age"
+            placeholder="Enter Age"
+            required
+        >
+
+        <input
+            type="text"
+            id="course"
+            placeholder="Enter Course"
+            required
+        >
+
+        <button type="submit" id="submitButton">
+            Add Student
+        </button>
+
+        <button
+            type="button"
+            id="cancelButton"
+            class="cancel-btn"
+            style="display: none;"
+            onclick="cancelEdit()">
+            Cancel
+        </button>
+
+    </form>
+
+    <div id="message"></div>
+
+    <h2>Student List</h2>
+
+    <button onclick="loadStudents()">
+        Refresh Students
+    </button>
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Age</th>
+                <th>Course</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody id="studentTableBody">
+        </tbody>
+
+    </table>
+
+</div>
+
+
+<script>
+
+    const API_URL = "http://localhost:8080/api/students";
+
+    let editingStudentId = null;
+
+
+    // ADD / UPDATE STUDENT
+    document.getElementById("studentForm")
+        .addEventListener("submit", function(event) {
+
+            event.preventDefault();
+
+            const student = {
+
+                name: document.getElementById("name").value,
+
+                email: document.getElementById("email").value,
+
+                age: parseInt(
+                    document.getElementById("age").value
+                ),
+
+                course: document.getElementById("course").value
+            };
+
+
+            // UPDATE
+            if (editingStudentId !== null) {
+
+                fetch(
+                    `${API_URL}/${editingStudentId}`,
+                    {
+                        method: "PUT",
+
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+
+                        body: JSON.stringify(student)
+                    }
+                )
+                .then(response => {
+
+                    if (!response.ok) {
+                        throw new Error("Update failed");
+                    }
+
+                    return response.json();
+                })
+                .then(data => {
+
+                    document.getElementById("message")
+                        .innerText =
+                        "Student updated successfully!";
+
+                    cancelEdit();
+
+                    loadStudents();
+                })
+                .catch(error => {
+
+                    document.getElementById("message")
+                        .innerText =
+                        "Error updating student";
+
+                    console.error(error);
+                });
+
+            }
+
+            // ADD
+            else {
+
+                fetch(API_URL, {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify(student)
+
+                })
+                .then(response => {
+
+                    if (!response.ok) {
+                        throw new Error("Add failed");
+                    }
+
+                    return response.json();
+                })
+                .then(data => {
+
+                    document.getElementById("message")
+                        .innerText =
+                        "Student added successfully!";
+
+                    document.getElementById("studentForm")
+                        .reset();
+
+                    loadStudents();
+                })
+                .catch(error => {
+
+                    document.getElementById("message")
+                        .innerText =
+                        "Error adding student";
+
+                    console.error(error);
+                });
+            }
+
+        });
+
+
+    // GET ALL STUDENTS
+    function loadStudents() {
+
+        fetch(API_URL)
+
+            .then(response => {
+
+                if (!response.ok) {
+                    throw new Error("Loading failed");
+                }
+
+                return response.json();
+            })
+
+            .then(students => {
+
+                const tableBody =
+                    document.getElementById(
+                        "studentTableBody"
+                    );
+
+                tableBody.innerHTML = "";
+
+
+                students.forEach(student => {
+
+                    const row =
+                        document.createElement("tr");
+
+
+                    row.innerHTML = `
+
+                        <td>${student.id}</td>
+
+                        <td>${student.name}</td>
+
+                        <td>${student.email}</td>
+
+                        <td>${student.age}</td>
+
+                        <td>${student.course}</td>
+
+                        <td>
+
+                            <button
+                                class="edit-btn"
+                                onclick="editStudent(
+                                    ${student.id},
+                                    '${escapeQuotes(student.name)}',
+                                    '${escapeQuotes(student.email)}',
+                                    ${student.age},
+                                    '${escapeQuotes(student.course)}'
+                                )">
+                                Edit
+                            </button>
+
+                            <button
+                                class="delete-btn"
+                                onclick="deleteStudent(${student.id})">
+                                Delete
+                            </button>
+
+                        </td>
+                    `;
+
+                    tableBody.appendChild(row);
+                });
+
+            })
+            .catch(error => {
+
+                document.getElementById("message")
+                    .innerText =
+                    "Error loading students";
+
+                console.error(error);
+            });
+    }
+
+
+    // EDIT STUDENT
+    function editStudent(
+        id,
+        name,
+        email,
+        age,
+        course
+    ) {
+
+        editingStudentId = id;
+
+        document.getElementById("name").value = name;
+
+        document.getElementById("email").value = email;
+
+        document.getElementById("age").value = age;
+
+        document.getElementById("course").value = course;
+
+        document.getElementById("formTitle")
+            .innerText = "Update Student";
+
+        document.getElementById("submitButton")
+            .innerText = "Update Student";
+
+        document.getElementById("submitButton")
+            .classList.add("update-btn");
+
+        document.getElementById("cancelButton")
+            .style.display = "inline-block";
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    }
+
+
+    // DELETE STUDENT
+    function deleteStudent(id) {
+
+        const confirmDelete =
+            confirm(
+                "Are you sure you want to delete this student?"
+            );
+
+        if (!confirmDelete) {
+            return;
+        }
+
+        fetch(
+            `${API_URL}/${id}`,
+            {
+                method: "DELETE"
+            }
+        )
+        .then(response => {
+
+            if (!response.ok) {
+                throw new Error("Delete failed");
+            }
+
+            document.getElementById("message")
+                .innerText =
+                "Student deleted successfully!";
+
+            loadStudents();
+        })
+        .catch(error => {
+
+            document.getElementById("message")
+                .innerText =
+                "Error deleting student";
+
+            console.error(error);
+        });
+    }
+
+
+    // CANCEL EDIT
+    function cancelEdit() {
+
+        editingStudentId = null;
+
+        document.getElementById("studentForm")
+            .reset();
+
+        document.getElementById("formTitle")
+            .innerText = "Add Student";
+
+        document.getElementById("submitButton")
+            .innerText = "Add Student";
+
+        document.getElementById("submitButton")
+            .classList.remove("update-btn");
+
+        document.getElementById("cancelButton")
+            .style.display = "none";
+    }
+
+
+    // HANDLE SPECIAL CHARACTERS
+    function escapeQuotes(value) {
+
+        return value
+            .replace(/\\/g, "\\\\")
+            .replace(/'/g, "\\'");
+    }
+
+
+    // LOAD STUDENTS WHEN PAGE OPENS
+    loadStudents();
+
+</script>
+```
+
+</body>
+
+</html>
