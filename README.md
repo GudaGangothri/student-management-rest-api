@@ -850,4 +850,4 @@ Through this project, I learned:
 
 ## GitHub Repository
 
-https://github.com/GudaGangothri/student-rest-api
+https://github.com/GudaGangothri/student-management-rest-api
