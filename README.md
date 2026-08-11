@@ -732,7 +732,7 @@ This screenshot shows the successful student creation message and the student re
 
 ![Student Updated Successfully](screenshots/03-student-update.png)
 
-This screenshot shows the successful student update message and the updated course information displayed in the Student List.
+This screenshot shows the successful student update operation and the updated student information displayed in the Student List.
 
 ---
 
@@ -743,6 +743,16 @@ This screenshot shows the successful student update message and the updated cour
 This screenshot shows the student deletion operation and the updated Student List after deleting the selected student.
 
 ---
+
+## Screenshot Folder Structure
+
+```text
+screenshots/
+│
+├── 01-add-student-form.png
+├── 02-student-added.png
+├── 03-student-update.png
+└── 04-student-delete.png
 
 ## Screenshot Folder Structure
 
